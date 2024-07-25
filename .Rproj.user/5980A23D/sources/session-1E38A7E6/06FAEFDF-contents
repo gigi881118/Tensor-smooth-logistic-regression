@@ -1,0 +1,197 @@
+library(imager)
+library(caTools)
+library(Matrix)
+library(rTensor)
+library(glmnet)
+library(rTensor)
+library(fastmatrix)
+library(glmnet)
+require("ADMM")
+library(ADMMadj5)
+
+#----- input function ---------
+setwd("~\\DEMO") #設置路徑
+path = "function\\" #the path of functions
+func_list <- list.files(path)
+for (func in func_list) {
+  source(paste0(path, func), local = FALSE)
+}
+
+#--------- Cont: Load image -----------------
+fpath <- "cross.jpg"
+im <- read.gif(filename = fpath)$image 
+##### 如果圖檔無法順利讀取請直接讀取下行！謝謝！ #####
+# load("im.rdata") 
+
+
+#------- IM: Resize ---------
+imRS = interpolate(im, c(32, 32))
+b = matrix(0, 64, 64)
+b[(dim(b)[1]/4):((dim(b)[1]/4)+dim(imRS)[1]-1),
+  (dim(b)[2]/4):((dim(b)[2]/4)+dim(imRS)[2]-1)] <- imRS
+
+p1 = dim(b)[1] ; p2 = dim(b)[2]
+n = 400 #sample size
+#--------- Cont: Simulate parameters -------
+p0 = 5
+b0 = matrix(rep(1, p0), p0, 1)
+
+r = 2
+distribution = gaussian()
+#-------- Cont: Simulate responses ------------
+X = array(rnorm(n*p0), dim=c(n, p0)) #n-by-p0 regular design matrix
+M = array(rnorm(p1*p2*n), dim=c(p1,p2,n)) #p1-by-p2-by-p3-by-n tensor variates
+
+mu = X %*% b0 + t(t(matrix(b)) %*% matrix(M, ncol = n))
+sigma = 1
+y = mu + sigma*array(rnorm(n), dim=c(n, 1))
+
+#----------- Cont: Estimate ----------------
+#TR
+TR_cont = kruskal.reg(X,M,y,r, dist = distribution)
+beta_TR_cont = TR_cont$beta_final
+# (Result1 <- norm(as.matrix(KTtoTensor(beta_TR_cont) - b), type = "F"))
+B0reg = beta_TR_cont #initial B0
+
+
+#TR LASSO
+lambdas = c(0.01, 0.03, 0.05, 0.1, 0.5, 1)
+Lambda_r1 = sapply(lambdas, function(L){
+  TRsp <- kruskal_sparsereg3(X, M, y, r, dist = distribution, 
+                             lambda = L, B0 = B0reg, smooth = F)
+  return(TRsp$glmstats$BIC)
+})
+(finalLambda_r1 = lambdas[which.min(Lambda_r1)])
+
+TRLASSO_cont = kruskal_sparsereg3(X,M,y,r, dist = distribution, 
+                                  lambda = finalLambda_r1, B0 = B0reg, 
+                                  smooth = F)
+beta_TRLASSO_cont = TRLASSO_cont$beta_final
+# (Result2 <- norm(as.matrix(KTtoTensor(beta_TRLASSO_cont) - b), type = "F"))
+
+
+#TR Smooth
+lambdas2 = c(0.05, 0.5, 1, 5, 10, 30)
+Lambda_r2 = sapply(lambdas2, function(L){
+  TRsp <- kruskal_sparsereg3(X, M, y, r, dist = distribution, 
+                             lambda = L, B0 = B0reg, smooth = T)
+  return(TRsp$glmstats$BIC)
+})
+(finalLambda_r2 = lambdas2[which.min(Lambda_r2)])
+
+TRsmooth_cont = kruskal_sparsereg3(X,M,y,r, dist = distribution, 
+                                   lambda = finalLambda_r2, B0 = B0reg, 
+                                   smooth = T)
+beta_TRsmooth_cont = TRsmooth_cont$beta_final
+# (Result3 <-norm(as.matrix(KTtoTensor(beta_TRsmooth_cont) - b), type = "F"))
+
+# Result1
+# Result2
+# Result3
+
+#--------------- Cont: plot ----------------
+windows()
+par(mfrow=c(2, 2))
+
+plot(as.cimg(abs(b - 1)), xlim = c(0, 64), ylim = c(0, 64), 
+     main = "True Signal")
+
+plot(as.cimg(abs(KTtoTensor(beta_TR_cont) - 1)), xlim = c(0, 64), ylim = c(0, 64), 
+     main = "TR"
+)
+
+plot(as.cimg(abs(KTtoTensor(beta_TRLASSO_cont) - 1)), xlim = c(0, 64), ylim = c(0, 64), 
+     main = "TR LASSO"
+)
+
+plot(as.cimg(abs(KTtoTensor(beta_TRsmooth_cont) - 1)), xlim = c(0, 64), ylim = c(0, 64), 
+     main = "TR Smooth"
+)
+
+#------- Bin: Resize ---------
+imRS = interpolate(im, c(32, 32))
+b = matrix(0, 64, 64)
+b[(dim(b)[1]/4):((dim(b)[1]/4)+dim(imRS)[1]-1),
+  (dim(b)[2]/4):((dim(b)[2]/4)+dim(imRS)[2]-1)] <- imRS
+
+p1 = dim(b)[1] ; p2 = dim(b)[2]
+
+#--------- Bin: Simulate parameters -------
+p0 = 5
+b0 = matrix(rep(1, p0), p0, 1)
+n = 500 #sample size
+
+r = 2
+distribution = binomial()
+#-------- Bin: Simulate responses ------------
+X = array(rnorm(n*p0), dim=c(n, p0)) #n-by-p0 regular design matrix
+M = array(rnorm(p1*p2*n), dim=c(p1,p2,n)) #p1-by-p2-by-n matrix variates
+
+mu = X %*% b0 + t(t(matrix(b)) %*% matrix(M, ncol = n))
+sigma = 1
+y = as.matrix(sapply(mu, function(x) rbinom(1, 1, 1/(1+exp(-x)))))
+
+#----------- Bin: Estimate ----------------
+#TR
+TR_bin = kruskal.reg(X,M,y,r, dist = distribution)
+beta_TR_bin = TR_bin$beta_final
+# (Result1 <- norm(as.matrix(KTtoTensor(beta_TR_bin) - b), type = "F"))
+
+B0reg = beta_TR_bin #initial B0
+
+#TR LASSO
+##grid search lambda
+lambdas = c(0.01, 0.03, 0.05, 0.5, 1)
+Lambda_r1 = sapply(lambdas, function(L){
+  TRsp <- kruskal_sparsereg3(X, M, y, r, dist = distribution, 
+                             lambda = L, B0 = B0reg)
+  return(TRsp$glmstats$BIC)
+})
+(finalLambda_r1 = lambdas[which.min(Lambda_r1)])
+TRLASSO_bin = kruskal_sparsereg3(X,M,y,r, dist = distribution, 
+                                 lambda = finalLambda_r1, B0 = B0reg, 
+                                 smooth = F)
+beta_TRLASSO_bin = TRLASSO_bin$beta_final
+# (Result2 <- norm(as.matrix(KTtoTensor(beta_TRLASSO_bin) - b), type = "F"))
+
+
+#TR Smooth
+##grid search lambda
+lambdas2 = c(0.05, 0.5, 1, 5, 10, 30)
+Lambda_r2 = sapply(lambdas2, function(L){
+  TRsp <- kruskal_sparsereg3(X, M, y, r, dist = distribution, 
+                             lambda = L, B0 = B0reg, smooth = T)
+  return(TRsp$glmstats$BIC)
+})
+(finalLambda_r2 = lambdas[which.min(Lambda_r2)])
+TRsmooth_bin = kruskal_sparsereg3(X,M,y,r, dist = distribution, 
+                                  lambda = finalLambda_r2, B0 = B0reg, 
+                                  smooth = T)
+beta_TRsmooth_bin = TRsmooth_bin$beta_final
+# (Result3 <- norm(as.matrix(KTtoTensor(beta_TRsmooth_bin) - b), type = "F"))
+
+# Result1
+# Result2
+# Result3
+
+#--------------- Cont: plot ----------------
+windows()
+par(mfrow=c(2, 2))
+
+plot(as.cimg(abs(b - 1)), xlim = c(0, 64), ylim = c(0, 64), 
+     main = "True Signal")
+
+plot(as.cimg(abs(KTtoTensor(beta_TR_bin) - 1)), xlim = c(0, 64), ylim = c(0, 64), 
+     main = "TR"
+)
+
+plot(as.cimg(abs(KTtoTensor(beta_TRLASSO_bin) - 1)), xlim = c(0, 64), ylim = c(0, 64), 
+     main = "TR LASSO"
+)
+
+plot(as.cimg(abs(KTtoTensor(beta_TRsmooth_bin) - 1)), xlim = c(0, 64), ylim = c(0, 64), 
+     main = "TR Smooth"
+)
+
+
+

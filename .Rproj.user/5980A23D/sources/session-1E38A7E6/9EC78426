@@ -1,0 +1,27 @@
+{
+    "id": "9EC78426",
+    "path": "D:/HypoForSu/5. Demo/TRSmoothLogistic/R/auxiliary functions.R",
+    "project_path": "R/auxiliary functions.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1721905350793.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "213,13",
+        "scrollLine": "0"
+    },
+    "folds": "16|41|117|0|\n",
+    "lastKnownWriteTime": 1721905856,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1721905856,
+    "read_only": false,
+    "read_only_alternatives": []
+}
