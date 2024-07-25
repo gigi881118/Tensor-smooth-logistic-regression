@@ -7,5 +7,5 @@ Description: Adopt a regression framework that treats high dimensional data as t
 License: GPL (>=3)
 Encoding: UTF-8
 LazyData: true
-Imports: Matrix, rTensor, glmnet, fastmatrix, glmnet, ADMM, ADMMadj5
+Imports: Matrix, rTensor, glmnet, fastmatrix, glmnet, ADMM
 
