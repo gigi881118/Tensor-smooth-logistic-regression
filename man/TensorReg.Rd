@@ -158,3 +158,4 @@ plot(as.cimg(abs(b - 1)), xlim = c(0, 64), ylim = c(0, 64),
 
 plot(as.cimg(abs(KTtoTensor(beta_TR_bin) - 1)), xlim = c(0, 64), ylim = c(0, 64),
      main = "TR")
+}
