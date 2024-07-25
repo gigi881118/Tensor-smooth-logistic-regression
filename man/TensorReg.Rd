@@ -135,7 +135,8 @@ p0 = 5
 p1 = dim(b)[1] ; p2 = dim(b)[2]
 b0 = matrix(rep(1, p0), p0, 1)
 n = 500 #sample size
-r = 2distribution = binomial()
+r = 2
+distribution = binomial()
 
 ## variates setting
 X = array(rnorm(n*p0), dim=c(n, p0)) #n-by-p0 regular design matrix
@@ -156,5 +157,4 @@ plot(as.cimg(abs(b - 1)), xlim = c(0, 64), ylim = c(0, 64),
      main = "True Signal")
 
 plot(as.cimg(abs(KTtoTensor(beta_TR_bin) - 1)), xlim = c(0, 64), ylim = c(0, 64),
-     main = "TR"
-)
+     main = "TR")
