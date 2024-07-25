@@ -2,7 +2,7 @@ Package: TRSmoothLogistic
 Type: Package
 Title: Tensor smooth logistic regression
 Version: 0.1.0
-Author: c(person("Gigi", "Wu", role = c("aut", "cre"), email = "gigi881118@gmail.com")
+Author: c(person("Gigi", "Wu", role = c("aut", "cre"), email = "gigi881118@gmail.com"))
 Description: Adopt a regression framework that treats high dimensional data as tensor covariates, and consider the smoothness of tensor covariates.
 License: GPL (>=3)
 Encoding: UTF-8
