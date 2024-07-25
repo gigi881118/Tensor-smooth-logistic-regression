@@ -14,7 +14,7 @@ You must install the following packages first before install
 ``` r
 install.packages("ADMM")
 # install.packages("devtools")
-devtools::install_github("gigi881118/ADMM_adjustment")
+devtools::install_github("gigi881118/ADMMadj5")
 ```
 
 And you can install the `TRSmoothLogistic` from
