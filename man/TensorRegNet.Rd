@@ -111,7 +111,9 @@ Gigi Wu
 }
 
 \examples{
-load('./example/im.rdata')
+im <- matrix(0, 558, 558)
+im[186:372, ] <- 1
+im[, 186:372] <- 1
 #"im" is a matrix where the shape of nonzero element is cross.
 
 ## IM: Resize
