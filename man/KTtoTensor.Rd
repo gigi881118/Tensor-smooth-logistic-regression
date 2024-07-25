@@ -24,7 +24,10 @@ Gigi Wu
 }
 
 \examples{
-load('./example/im.rdata') #"im" is a matrix where the shape of nonzero element is cross.
+im <- matrix(0, 558, 558)
+im[186:372, ] <- 1
+im[, 186:372] <- 1
+#"im" is a matrix where the shape of nonzero element is cross.
 
 ##resize im
 imRS = interpolate(im, c(32, 32))
